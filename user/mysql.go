@@ -10,11 +10,15 @@ import (
 )
 
 type mysql struct {
-	db *sql.DB
+	db      *sql.DB
+	slaveDB *sql.DB
 }
 
-func NewRepository(db *sql.DB) repository {
-	return &mysql{db: db}
+func NewRepository(db *sql.DB, slaveDB *sql.DB) repository {
+	return &mysql{
+		db:      db,
+		slaveDB: slaveDB,
+	}
 }
 
 func (m *mysql) Create(user *User) (*User, error) {
@@ -150,7 +154,7 @@ func (m *mysql) GetByFirstAndLastName(firstname, lastname string) ([]User, error
 	firstNameQuery := firstname + "%"
 	lastNameQuery := lastname + "%"
 
-	rows, err := m.db.QueryContext(ctx, query.SQL, lastNameQuery, firstNameQuery)
+	rows, err := m.slaveDB.QueryContext(ctx, query.SQL, lastNameQuery, firstNameQuery)
 	if err != nil {
 		return nil, err
 	}
@@ -195,7 +199,7 @@ func (m *mysql) GetByLogin(login string) (*User, error) {
 	var cityName sql.NullString
 	var cityID sql.NullInt64
 
-	row := m.db.QueryRowContext(ctx, query.SQL, login)
+	row := m.slaveDB.QueryRowContext(ctx, query.SQL, login)
 	err := row.Scan(
 		&user.ID,
 		&user.FirstName,

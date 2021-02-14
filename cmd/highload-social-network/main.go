@@ -33,9 +33,13 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	slave1DB, err := dbConnect("mysql", cfg.Slave1.ConnectionString())
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// Repositories
-	userRepo := user.NewRepository(db)
+	userRepo := user.NewRepository(db, slave1DB)
 	cityRepo := city.NewRepository(db)
 	interestRepo := interest.NewRepository(db)
 
