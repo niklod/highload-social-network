@@ -30,12 +30,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	slave, err := createDB(cfg.Slave1.ConnectionString())
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	userRepo := user.NewRepository(master, slave)
+	userRepo := user.NewRepository(master, master)
 	cityRepo := city.NewRepository(master)
 	interestRepo := interest.NewRepository(master)
 
@@ -62,10 +57,9 @@ func startUploadUsers(ctx context.Context, svc *user.Service) {
 	userPostfix := 1
 
 	for {
-
 		select {
 		case <-ctx.Done():
-			fmt.Printf("Загружено %d строк", counter)
+			fmt.Printf("Создано %d пользователей", counter)
 			return
 		default:
 			u := &user.User{
