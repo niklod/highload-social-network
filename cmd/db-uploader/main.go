@@ -23,8 +23,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println(cfg.DB.ConnectionString())
-
 	master, err := createDB(cfg.DB.ConnectionString())
 	if err != nil {
 		log.Fatal(err)
@@ -49,6 +47,8 @@ func main() {
 
 	fmt.Println("Завершение работы")
 	cancel()
+
+	time.Sleep(1 * time.Second)
 
 }
 
@@ -76,13 +76,17 @@ func startUploadUsers(ctx context.Context, svc *user.Service) {
 
 			_, err := svc.Create(u)
 			if err != nil {
-				log.Fatal(err)
+				fmt.Printf("Создано %d пользователей", counter)
+				return
 			}
-			fmt.Printf("User %s created\n", u.FirstName)
 		}
 
+		fmt.Printf("Counter: %d\n", counter)
+
+		counter++
 		userPostfix++
-		time.Sleep(1 * time.Second)
+
+		time.Sleep(500 * time.Microsecond)
 	}
 }
 
