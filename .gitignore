@@ -1,6 +1,5 @@
 .env
-/build
-mysql/*
-mysql-data/*
-user/mysql.go
 launch.json
+build/
+mysql-data/*
+tarantool-data/*

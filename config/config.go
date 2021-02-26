@@ -11,6 +11,7 @@ var SessionName = "hsn-session"
 type Config struct {
 	DB        *DBConfig
 	Server    *HTTPServerConfig
+	Tarantool *Tarantool
 	SecretKey string `envconfig:"SESSION_SECRET_KEY" default:"verysecretkey"`
 }
 
@@ -24,6 +25,13 @@ type DBConfig struct {
 
 func (d *DBConfig) ConnectionString() string {
 	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", d.Login, d.Password, d.Host, d.Port, d.DBName)
+}
+
+type Tarantool struct {
+	Host     string `envconfig:"TARANTOOL_HOST" default:"localhost"`
+	Port     int    `envconfig:"TARANTOOL_PORT" default:"3013"`
+	Login    string `envconfig:"TARANTOOL_LOGIN" default:"niklod"`
+	Password string `envconfig:"TARANTOOL_PASSWORD" default:"VLQi4Vttuo6wFRqm"`
 }
 
 type HTTPServerConfig struct {
