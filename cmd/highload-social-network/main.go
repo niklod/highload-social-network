@@ -14,13 +14,14 @@ import (
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/sessions"
+	"github.com/tarantool/go-tarantool"
 
+	"github.com/niklod/highload-social-network/server"
 	"github.com/niklod/highload-social-network/user"
 	"github.com/niklod/highload-social-network/user/city"
 	"github.com/niklod/highload-social-network/user/interest"
 
 	"github.com/niklod/highload-social-network/config"
-	"github.com/niklod/highload-social-network/server"
 )
 
 func main() {
@@ -34,8 +35,13 @@ func main() {
 		log.Fatal(err)
 	}
 
+	tarantool, err := tarantoolConnect(*cfg.Tarantool)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	// Repositories
-	userRepo := user.NewRepository(db)
+	userRepo := user.NewRepository(db, tarantool)
 	cityRepo := city.NewRepository(db)
 	interestRepo := interest.NewRepository(db)
 
@@ -117,4 +123,28 @@ func dbConnect(driver, connectionString string) (*sql.DB, error) {
 	}
 
 	return nil, connErr
+}
+
+func tarantoolConnect(cfg config.Tarantool) (*tarantool.Connection, error) {
+	opts := tarantool.Opts{
+		Timeout:       0,
+		Reconnect:     0,
+		MaxReconnects: 0,
+		User:          cfg.Login,
+		Pass:          cfg.Password,
+	}
+
+	server := fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
+
+	client, err := tarantool.Connect(server, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = client.Ping()
+	if err != nil {
+		return nil, err
+	}
+
+	return client, nil
 }

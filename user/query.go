@@ -41,7 +41,7 @@ func init() {
 				FROM users as u
 						LEFT JOIN citys as c ON u.city_id = c.id
 				ORDER BY u.first_name`,
-		Timeout: 10 * time.Second,
+		Timeout: 5 * time.Minute,
 	}
 
 	queryMap[getByID] = Query{

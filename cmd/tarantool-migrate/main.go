@@ -106,3 +106,27 @@ func dbConnect(driver, connectionString string) (*sql.DB, error) {
 
 	return nil, connErr
 }
+
+func tarantoolConnect(cfg config.Tarantool) (*tarantool.Connection, error) {
+	opts := tarantool.Opts{
+		Timeout:       0,
+		Reconnect:     0,
+		MaxReconnects: 0,
+		User:          cfg.Login,
+		Pass:          cfg.Password,
+	}
+
+	server := fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
+
+	client, err := tarantool.Connect(server, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = client.Ping()
+	if err != nil {
+		return nil, err
+	}
+
+	return client, nil
+}

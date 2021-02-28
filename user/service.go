@@ -19,6 +19,7 @@ type repository interface {
 	GetByID(id int) (*User, error)
 	GetByLogin(login string) (*User, error)
 	GetByFirstAndLastName(firstname, lastname string) ([]User, error)
+	GetByFirstAndLastNameTarantool(firstname, lastname string) ([]User, error)
 	AddFriend(userId int, friendId int) error
 	DeleteFriend(userId int, friendId int) error
 	Friends(userId int) ([]User, error)

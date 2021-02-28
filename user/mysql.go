@@ -7,14 +7,20 @@ import (
 	"log"
 
 	"github.com/niklod/highload-social-network/user/city"
+	"github.com/niklod/highload-social-network/user/interest"
+	"github.com/tarantool/go-tarantool"
 )
 
 type mysql struct {
-	db *sql.DB
+	db        *sql.DB
+	tarantool *tarantool.Connection
 }
 
-func NewRepository(db *sql.DB) repository {
-	return &mysql{db: db}
+func NewRepository(db *sql.DB, tar *tarantool.Connection) repository {
+	return &mysql{
+		db:        db,
+		tarantool: tar,
+	}
 }
 
 func (m *mysql) Create(user *User) (*User, error) {
@@ -177,6 +183,40 @@ func (m *mysql) GetByFirstAndLastName(firstname, lastname string) ([]User, error
 		if cityName.Valid && cityID.Valid {
 			user.City.Name = cityName.String
 			user.City.ID = int(cityID.Int64)
+		}
+
+		users = append(users, user)
+	}
+
+	return users, nil
+}
+
+func (m *mysql) GetByFirstAndLastNameTarantool(firstname, lastname string) ([]User, error) {
+	resp, err := m.tarantool.Call("find_user_by_name", []string{lastname, firstname})
+	if err != nil {
+		return nil, err
+	}
+
+	var users []User
+
+	for _, item := range resp.Data {
+		i := item.([]interface{})
+
+		user := User{
+			ID:        int(i[0].(uint64)),
+			FirstName: i[1].(string),
+			Lastname:  i[2].(string),
+			Age:       int(i[4].(uint64)),
+			Sex:       i[7].(string),
+			City: city.City{
+				ID:            int(i[5].(uint64)),
+				Name:          i[6].(string),
+				CreatedByUser: false,
+			},
+			Login:     i[3].(string),
+			Password:  i[8].(string),
+			Friends:   []User{},
+			Interests: []interest.Interest{},
 		}
 
 		users = append(users, user)
